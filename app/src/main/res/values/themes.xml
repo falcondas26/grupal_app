@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Calculadora" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/btn_operator</item>
+        <item name="colorPrimaryVariant">@color/bg_calculator</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">@color/bg_calculator</item>
+        <item name="android:windowBackground">@color/bg_calculator</item>
+    </style>
+</resources>

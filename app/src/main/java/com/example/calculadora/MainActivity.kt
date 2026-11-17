@@ -1,0 +1,141 @@
+package com.example.calculadora
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import java.text.DecimalFormat
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var tvOperacion: TextView
+    private lateinit var tvResultado: TextView
+
+    private var primerNumero: Double? = null
+    private var operacionActual: String? = null
+    private var esNuevaEntrada: Boolean = true
+
+    private val formatoDecimal = DecimalFormat("#.########")
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        tvOperacion = findViewById(R.id.tvOperacion)
+        tvResultado = findViewById(R.id.tvResultado)
+
+        configurarBotonesNumericos()
+        configurarBotonesAccion()
+        configurarOperacionSuma()
+    }
+
+    private fun configurarBotonesNumericos() {
+        val botonesNumeros = mapOf(
+            R.id.btn0 to "0",
+            R.id.btn1 to "1",
+            R.id.btn2 to "2",
+            R.id.btn3 to "3",
+            R.id.btn4 to "4",
+            R.id.btn5 to "5",
+            R.id.btn6 to "6",
+            R.id.btn7 to "7",
+            R.id.btn8 to "8",
+            R.id.btn9 to "9"
+        )
+
+        for ((id, valor) in botonesNumeros) {
+            findViewById<Button>(id).setOnClickListener {
+                agregarDigito(valor)
+            }
+        }
+
+        findViewById<Button>(R.id.btnPunto).setOnClickListener {
+            agregarPunto()
+        }
+    }
+
+    private fun agregarDigito(digito: String) {
+        val textoActual = tvResultado.text.toString()
+        if (esNuevaEntrada || textoActual == "0") {
+            tvResultado.text = digito
+            esNuevaEntrada = false
+        } else {
+            tvResultado.append(digito)
+        }
+    }
+
+    private fun agregarPunto() {
+        if (esNuevaEntrada) {
+            tvResultado.text = "0."
+            esNuevaEntrada = false
+        } else if (!tvResultado.text.contains(".")) {
+            tvResultado.append(".")
+        }
+    }
+
+    private fun configurarBotonesAccion() {
+        findViewById<Button>(R.id.btnLimpiar).setOnClickListener {
+            limpiarCalculadora()
+        }
+
+        findViewById<Button>(R.id.btnBorrar).setOnClickListener {
+            borrarUltimoDigito()
+        }
+    }
+
+    private fun limpiarCalculadora() {
+        tvResultado.text = "0"
+        tvOperacion.text = ""
+        primerNumero = null
+        operacionActual = null
+        esNuevaEntrada = true
+    }
+
+    private fun borrarUltimoDigito() {
+        val textoActual = tvResultado.text.toString()
+        if (!esNuevaEntrada && textoActual.isNotEmpty() && textoActual != "0") {
+            if (textoActual.length == 1) {
+                tvResultado.text = "0"
+                esNuevaEntrada = true
+            } else {
+                tvResultado.text = textoActual.substring(0, textoActual.length - 1)
+            }
+        }
+    }
+
+    private fun configurarOperacionSuma() {
+        findViewById<Button>(R.id.btnSumar).setOnClickListener {
+            prepararOperacion("+")
+        }
+
+        findViewById<Button>(R.id.btnIgual).setOnClickListener {
+            ejecutarIgual()
+        }
+    }
+
+    private fun prepararOperacion(operador: String) {
+        val valorActual = tvResultado.text.toString().toDoubleOrNull() ?: return
+        primerNumero = valorActual
+        operacionActual = operador
+        tvOperacion.text = "${formatoDecimal.format(valorActual)} $operador"
+        esNuevaEntrada = true
+    }
+
+    private fun ejecutarIgual() {
+        val segundoNumero = tvResultado.text.toString().toDoubleOrNull() ?: return
+        val numero1 = primerNumero ?: return
+        val op = operacionActual ?: return
+
+        if (op == "+") {
+            val resultado = sumar(numero1, segundoNumero)
+            tvOperacion.text = "${formatoDecimal.format(numero1)} + ${formatoDecimal.format(segundoNumero)} ="
+            tvResultado.text = formatoDecimal.format(resultado)
+            primerNumero = resultado
+            esNuevaEntrada = true
+        }
+    }
+
+    private fun sumar(a: Double, b: Double): Double {
+        return a + b
+    }
+}

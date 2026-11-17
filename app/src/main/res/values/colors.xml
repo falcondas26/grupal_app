@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_calculator">#18181B</color>
+    <color name="bg_display">#27272A</color>
+    <color name="btn_number">#3F3F46</color>
+    <color name="btn_number_pressed">#52525B</color>
+    <color name="btn_action">#52525B</color>
+    <color name="btn_action_pressed">#71717A</color>
+    <color name="btn_operator">#F97316</color>
+    <color name="btn_operator_pressed">#EA580C</color>
+    <color name="btn_equal">#10B981</color>
+    <color name="text_display">#FFFFFF</color>
+    <color name="text_history">#A1A1AA</color>
+    <color name="white">#FFFFFF</color>
+</resources>
