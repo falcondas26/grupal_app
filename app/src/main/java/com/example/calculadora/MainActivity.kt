@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
     private var primerNumero: Double? = null
     private var operacionActual: String? = null
     private var esNuevaEntrada: Boolean = true
+    private var operacionTerminada: Boolean = false
 
     private val formatoDecimal = DecimalFormat("#.########")
 
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         configurarBotonesNumericos()
         configurarBotonesAccion()
         configurarOperacionSuma()
+        configurarOperacionResta()
     }
 
     private fun configurarBotonesNumericos() {
@@ -55,6 +57,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun agregarDigito(digito: String) {
+        if (operacionTerminada) {
+            limpiarCalculadora()
+            operacionTerminada = false
+        }
+
         val textoActual = tvResultado.text.toString()
         if (esNuevaEntrada || textoActual == "0") {
             tvResultado.text = digito
@@ -65,6 +72,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun agregarPunto() {
+        if (operacionTerminada) {
+            limpiarCalculadora()
+            operacionTerminada = false
+        }
+
         if (esNuevaEntrada) {
             tvResultado.text = "0."
             esNuevaEntrada = false
@@ -89,9 +101,14 @@ class MainActivity : AppCompatActivity() {
         primerNumero = null
         operacionActual = null
         esNuevaEntrada = true
+        operacionTerminada = false
     }
 
     private fun borrarUltimoDigito() {
+        if (operacionTerminada) {
+            return
+        }
+
         val textoActual = tvResultado.text.toString()
         if (!esNuevaEntrada && textoActual.isNotEmpty() && textoActual != "0") {
             if (textoActual.length == 1) {
@@ -113,29 +130,62 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun configurarOperacionResta() {
+        findViewById<Button>(R.id.btnRestar).setOnClickListener {
+            prepararOperacion("−")
+        }
+    }
+
     private fun prepararOperacion(operador: String) {
-        val valorActual = tvResultado.text.toString().toDoubleOrNull() ?: return
-        primerNumero = valorActual
+        operacionTerminada = false
+
+        if (primerNumero != null && operacionActual != null && !esNuevaEntrada) {
+            val segundoNumero = tvResultado.text.toString().toDoubleOrNull() ?: return
+            val resultadoParcial = calcularResultado(primerNumero!!, segundoNumero, operacionActual!!)
+            primerNumero = resultadoParcial
+            tvResultado.text = formatoDecimal.format(resultadoParcial)
+        } else if (primerNumero == null) {
+            val valorActual = tvResultado.text.toString().toDoubleOrNull() ?: return
+            primerNumero = valorActual
+        }
+
         operacionActual = operador
-        tvOperacion.text = "${formatoDecimal.format(valorActual)} $operador"
+        tvOperacion.text = "${formatoDecimal.format(primerNumero!!)} $operador"
         esNuevaEntrada = true
     }
 
     private fun ejecutarIgual() {
-        val segundoNumero = tvResultado.text.toString().toDoubleOrNull() ?: return
-        val numero1 = primerNumero ?: return
-        val op = operacionActual ?: return
+        if (primerNumero == null || operacionActual == null || esNuevaEntrada) {
+            return
+        }
 
-        if (op == "+") {
-            val resultado = sumar(numero1, segundoNumero)
-            tvOperacion.text = "${formatoDecimal.format(numero1)} + ${formatoDecimal.format(segundoNumero)} ="
-            tvResultado.text = formatoDecimal.format(resultado)
-            primerNumero = resultado
-            esNuevaEntrada = true
+        val segundoNumero = tvResultado.text.toString().toDoubleOrNull() ?: return
+        val num1 = primerNumero!!
+        val op = operacionActual!!
+
+        val resultado = calcularResultado(num1, segundoNumero, op)
+        tvOperacion.text = "${formatoDecimal.format(num1)} $op ${formatoDecimal.format(segundoNumero)} ="
+        tvResultado.text = formatoDecimal.format(resultado)
+
+        primerNumero = resultado
+        operacionActual = null
+        esNuevaEntrada = true
+        operacionTerminada = true
+    }
+
+    private fun calcularResultado(a: Double, b: Double, op: String): Double {
+        return when (op) {
+            "+" -> sumar(a, b)
+            "−" -> restar(a, b)
+            else -> b
         }
     }
 
     private fun sumar(a: Double, b: Double): Double {
         return a + b
+    }
+
+    private fun restar(a: Double, b: Double): Double {
+        return a - b
     }
 }
