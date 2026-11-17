@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         configurarBotonesAccion()
         configurarOperacionSuma()
         configurarOperacionResta()
+        configurarOperacionMultiplicacion()
     }
 
     private fun configurarBotonesNumericos() {
@@ -136,6 +137,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun configurarOperacionMultiplicacion() {
+        findViewById<Button>(R.id.btnMultiplicar).setOnClickListener {
+            prepararOperacion("×")
+        }
+    }
+
     private fun prepararOperacion(operador: String) {
         operacionTerminada = false
 
@@ -177,6 +184,7 @@ class MainActivity : AppCompatActivity() {
         return when (op) {
             "+" -> sumar(a, b)
             "−" -> restar(a, b)
+            "×" -> multiplicar(a, b)
             else -> b
         }
     }
@@ -187,5 +195,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun restar(a: Double, b: Double): Double {
         return a - b
+    }
+
+    private fun multiplicar(a: Double, b: Double): Double {
+        return a * b
     }
 }
