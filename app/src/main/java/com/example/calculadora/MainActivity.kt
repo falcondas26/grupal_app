@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         configurarOperacionSuma()
         configurarOperacionResta()
         configurarOperacionMultiplicacion()
+        configurarOperacionDivision()
     }
 
     private fun configurarBotonesNumericos() {
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val textoActual = tvResultado.text.toString()
-        if (esNuevaEntrada || textoActual == "0") {
+        if (esNuevaEntrada || textoActual == "0" || textoActual == "Error") {
             tvResultado.text = digito
             esNuevaEntrada = false
         } else {
@@ -78,10 +79,11 @@ class MainActivity : AppCompatActivity() {
             operacionTerminada = false
         }
 
-        if (esNuevaEntrada) {
+        val textoActual = tvResultado.text.toString()
+        if (esNuevaEntrada || textoActual == "Error") {
             tvResultado.text = "0."
             esNuevaEntrada = false
-        } else if (!tvResultado.text.contains(".")) {
+        } else if (!textoActual.contains(".")) {
             tvResultado.append(".")
         }
     }
@@ -111,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val textoActual = tvResultado.text.toString()
-        if (!esNuevaEntrada && textoActual.isNotEmpty() && textoActual != "0") {
+        if (!esNuevaEntrada && textoActual.isNotEmpty() && textoActual != "0" && textoActual != "Error") {
             if (textoActual.length == 1) {
                 tvResultado.text = "0"
                 esNuevaEntrada = true
@@ -143,12 +145,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun configurarOperacionDivision() {
+        findViewById<Button>(R.id.btnDividir).setOnClickListener {
+            prepararOperacion("÷")
+        }
+    }
+
     private fun prepararOperacion(operador: String) {
         operacionTerminada = false
 
         if (primerNumero != null && operacionActual != null && !esNuevaEntrada) {
             val segundoNumero = tvResultado.text.toString().toDoubleOrNull() ?: return
             val resultadoParcial = calcularResultado(primerNumero!!, segundoNumero, operacionActual!!)
+            if (resultadoParcial == null) {
+                mostrarErrorDivision()
+                return
+            }
             primerNumero = resultadoParcial
             tvResultado.text = formatoDecimal.format(resultadoParcial)
         } else if (primerNumero == null) {
@@ -171,6 +183,11 @@ class MainActivity : AppCompatActivity() {
         val op = operacionActual!!
 
         val resultado = calcularResultado(num1, segundoNumero, op)
+        if (resultado == null) {
+            mostrarErrorDivision()
+            return
+        }
+
         tvOperacion.text = "${formatoDecimal.format(num1)} $op ${formatoDecimal.format(segundoNumero)} ="
         tvResultado.text = formatoDecimal.format(resultado)
 
@@ -180,11 +197,23 @@ class MainActivity : AppCompatActivity() {
         operacionTerminada = true
     }
 
-    private fun calcularResultado(a: Double, b: Double, op: String): Double {
+    private fun mostrarErrorDivision() {
+        tvOperacion.text = "${formatoDecimal.format(primerNumero ?: 0.0)} ÷ 0 ="
+        tvResultado.text = "Error"
+        primerNumero = null
+        operacionActual = null
+        esNuevaEntrada = true
+        operacionTerminada = true
+    }
+
+    private fun calcularResultado(a: Double, b: Double, op: String): Double? {
         return when (op) {
             "+" -> sumar(a, b)
             "−" -> restar(a, b)
             "×" -> multiplicar(a, b)
+            "÷" -> {
+                if (b == 0.0) null else dividir(a, b)
+            }
             else -> b
         }
     }
@@ -199,5 +228,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun multiplicar(a: Double, b: Double): Double {
         return a * b
+    }
+
+    private fun dividir(a: Double, b: Double): Double {
+        return a / b
     }
 }
